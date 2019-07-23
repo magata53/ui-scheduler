@@ -1,3 +1,8 @@
 module.exports = {
-    publicPath: process.env.NODE_ENV === 'production' ? '/production-sub-path/' : '/'
+    runtimeCompiler: true,
+    productionSourceMap: false,
+    
+    publicPath: process.env.NODE_ENV === 'production'
+    ? '/scheduler/'
+    : '/'
   }
