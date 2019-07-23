@@ -1,9 +1,12 @@
 <template>
   <div>
+    <!-- Judul tabel scheduler -->
     <v-toolbar>
-      <v-toolbar-title>List Of Schedule</v-toolbar-title>
+      <v-toolbar-title>List Of Scheduler</v-toolbar-title>
       <v-divider class="mx-2" inset vertical></v-divider>
       <v-spacer></v-spacer>
+
+      <!-- Select category component -->
       <v-layout row wrap align-center>
         <v-flex xs3>
           <v-subheader>Select Category</v-subheader>
@@ -13,25 +16,33 @@
         </v-flex>
       </v-layout>
       <v-spacer></v-spacer>
-      <v-dialog v-model="dialog" max-width="500px">
+
+      <!-- Dialog buat baru dan edit scheduler -->
+      <v-dialog v-model="dialog" persistent max-width="500px">
+        <!-- Tombol buat baru -->
         <template v-slot:activator="{ on }">
           <v-btn color="primary" dark class="mb-2" v-on="on">Create</v-btn>
         </template>
+
+        <!-- Isi Dialog -->
         <v-card>
+          <!-- Judul Dialog -->
           <v-card-title>
             <span class="headline">{{ formTitle }}</span>
           </v-card-title>
 
+          <!-- Body dialog berisi form untuk buat dan edit -->
           <v-card-text >
             <v-container grid-list-md v-if="method === 'edit' || method === 'new'">
               <v-layout wrap>
+                <v-form ref="form" v-model="valid" lazy-validation>
                 <v-flex xs12>
-                  <v-text-field v-model="editedItem.device_name" label="Device name"></v-text-field>
+                  <v-text-field v-model="editedItem.device_name" label="Device name" required :rules="nameRules"></v-text-field>
                 </v-flex>
                 <v-flex xs12>
-                  <v-select v-model="editedItem.category" :items="optionCategory"></v-select>
+                  <v-select v-model="editedItem.category" :items="optionCategory" required :rules="categoryRules"></v-select>
                 </v-flex>
-                <v-flex xs12 v-if="editedItem.category === 'Daily'">
+                <v-flex xs12>
                   <v-menu
                     ref="menu"
                     v-model="menu"
@@ -63,7 +74,7 @@
                     ></v-time-picker>
                   </v-menu>
                 </v-flex>
-                <v-flex xs12 v-else-if="editedItem.category === 'Weekly'">
+                <v-flex xs12 v-if="editedItem.category === 'Weekly'">
                   <v-layout wrap>
                     <v-flex xs4>
                       <v-checkbox
@@ -161,9 +172,11 @@
                     color="success"
                   ></v-switch>
                 </v-flex>
+                </v-form>
               </v-layout>
             </v-container>
 
+              <!-- Body untuk detail -->
               <v-container grid-list-md v-else>
               <v-layout wrap>
                 <v-flex xs12>
@@ -180,23 +193,25 @@
                     <v-flex xs4>{{editedItem.category}}</v-flex>
                   </v-layout>
                 </v-flex>
-                <v-flex xs12 v-if="editedItem.category === 'Daily'">
+                <v-flex xs12>
                   <v-layout>
-                    <v-flex xs4>Repeat Time</v-flex>
+                    <v-flex xs4>Time</v-flex>
                     <v-flex xs2>:</v-flex>
                     <v-flex xs4>{{editedItem.time}}</v-flex>
                   </v-layout>
                 </v-flex>
-                <v-flex xs12 v-else-if="editedItem.category === 'Weekly'">
+                <v-flex xs12 v-if="editedItem.category === 'Weekly'">
                   <v-layout>
-                    <v-flex xs4>Repeat Days</v-flex>
+                    <v-flex xs4>Days</v-flex>
                     <v-flex xs2>:</v-flex>
-                    <v-flex xs4>{{editedItem.day}}</v-flex>
+                    <v-flex xs4>
+                    <span v-for="(item,index) in editedItem.day" :key="index">{{item}}, </span> 
+                    </v-flex>
                   </v-layout>
                 </v-flex>
                 <v-flex xs12 v-else-if="editedItem.category === 'Monthly'">
                   <v-layout>
-                    <v-flex xs4>Repeat Start Date</v-flex>
+                    <v-flex xs4>Start Date</v-flex>
                     <v-flex xs2>:</v-flex>
                     <v-flex xs4>{{editedItem.date}}</v-flex>
                   </v-layout>
@@ -215,15 +230,19 @@
             </v-container>
           </v-card-text>
 
+          <!-- Button action edit, buat, cancel, ok -->
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="blue darken-1" flat @click="close" v-if="method === 'edit' || method === 'new'">Cancel</v-btn>
             <v-btn color="blue darken-1" flat @click="save" v-if="method === 'edit' || method === 'new'">Save</v-btn>
             <v-btn color="blue darken-1" flat @click="close1" v-else>OK</v-btn>
           </v-card-actions>
+
         </v-card>
       </v-dialog>
     </v-toolbar>
+
+    <!-- Tabel daftar scheduler -->
     <v-data-table
       :headers="headers"
       :items="desserts"
@@ -257,6 +276,7 @@
 export default {
   name: "HelloWorld",
   data: () => ({
+    valid: true,
     menu1: false,
     menu: false,
     loading: false,
@@ -296,6 +316,12 @@ export default {
       { text: "Daily", value: "Daily" },
       { text: "Weekly", value: "Weekly" },
       { text: "Monthly", value: "Monthly" }
+    ],
+    nameRules: [
+      v => !!v || 'Device name is required',
+    ],
+    categoryRules: [
+      v => !!v || 'Category is required',
     ]
   }),
 
@@ -335,12 +361,14 @@ export default {
           device_name: "Device 2",
           category: "Weekly",
           day: ["Sunday", "Monday"],
+          time: "08:00",
           activation: "1"
         },
         {
           device_name: "Device 3",
           category: "Monthly",
           date: "2019-07-01",
+          time: "08:00",
           activation: "1"
         },
         {
@@ -359,12 +387,14 @@ export default {
           device_name: "Device 6",
           category: "Weekly",
           day: ["Sunday", "Monday"],
+          time: "08:00",
           activation: "0"
         },
         {
           device_name: "Device 7",
           category: "Monthly",
           date: "2019-07-15",
+          time: "08:00",
           activation: "0"
         }
       ];
@@ -395,7 +425,7 @@ export default {
       setTimeout(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
-         this.method = "new";
+        this.method = "new";
       }, 300);
     },
     close1() {
@@ -407,14 +437,45 @@ export default {
         this.method = "new";
       }, 300);
     },
-
+    validate () {
+        if (this.$refs.form.validate()) {
+          this.snackbar = true
+        }
+    },
+    resetValidation () {
+        this.$refs.form.resetValidation()
+    },
     save() {
       if (this.editedIndex > -1) {
         Object.assign(this.desserts[this.editedIndex], this.editedItem);
+      } else if (this.editedItem.category === "Daily"){
+        this.desserts.push({
+          device_name: this.editedItem.device_name,
+          category: this.editedItem.category,
+          time: this.editedItem.time,
+          activation: this.editedItem.activation
+        });
+      } else if(this.editedItem.category === "Weekly") {
+        this.desserts.push({
+          device_name: this.editedItem.device_name,
+          category: this.editedItem.category,
+          day: this.editedItem.day,
+          time: this.editedItem.time,
+          activation: this.editedItem.activation
+        });
+      } else if(this.editedItem.category === "Monthly") {
+        this.desserts.push({
+          device_name: this.editedItem.device_name,
+          category: this.editedItem.category,
+          date: this.editedItem.date,
+          time: this.editedItem.time,
+          activation: this.editedItem.activation
+        });
       } else {
-        this.desserts.push(this.editedItem);
+        this.validate();
       }
       this.close();
+      this.resetValidation();
     }
   }
 };
